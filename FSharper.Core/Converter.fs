@@ -533,21 +533,21 @@ module FormatOuput =
                 range0
         )
 
-        let convertSynConstType (converter: obj -> 'b) =
-            function
-            | SynConst.Int32(x) -> converter x
-            | SynConst.Int64(x) -> converter x
-            | _ -> None
-
-        let convertToBaseType (t: SynType option) (x: SynConst) =
-            let convert x =
+        let tryCreateSynConst (ctor: 'a -> SynConst) =
+            let changeType x =
                 try Some(System.Convert.ChangeType(x, typeof<'T>) :?> 'T)
                 with _ -> None
-            match t with
-            | Some(synType) when SynType.getName synType = "byte" -> 
-                x |> convertSynConstType (convert >> Option.map SynConst.Byte)
-            | Some(synType) when SynType.getName synType = "int64" -> 
-                x |> convertSynConstType (convert >> Option.map SynConst.Int64)
+            function
+            | SynConst.Int32(x) -> x |> changeType |> Option.map ctor
+            | SynConst.Int64(x) -> x |> changeType |> Option.map ctor
+            | _ -> None
+
+        let tryConvertSynConstType (targetType: SynType option) (x: SynConst) =
+            let (|SynTypeName|_|) = Option.map (SynType.getName)
+            let convertTo t = tryCreateSynConst t x
+            match targetType with
+            | SynTypeName "byte" -> convertTo SynConst.Byte
+            | SynTypeName "int64" -> convertTo SynConst.Int64
             | Some _ -> Some x
             | None -> Some x
 
@@ -558,7 +558,7 @@ module FormatOuput =
                 | SynExpr.Const(synConst, _) -> 
                     synConst
                     // all cases need converting to the same base type
-                    |> (convertToBaseType enum.Type)
+                    |> (tryConvertSynConstType enum.Type)
                     |> Option.map (createEnumCase name)
                 | _ -> None
             )

@@ -399,7 +399,6 @@ type Enum = {
     Members: EnumMemberValue list
     Attributes: Attribute list
 }
-//TODO: non-default enum types
 and EnumMemberValue = string * Expr
 
 type InferfaceMethod = Method of name:Ident * parameters:SynType list
