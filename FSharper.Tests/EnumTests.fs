@@ -135,7 +135,7 @@ type EnumTests () =
         |> should equal (formatFsharp fsharp)
         
     [<Test>]
-    member this.``Enum with specified type`` () = 
+    member this.``Enum with specified type of byte`` () = 
         let csharp = 
                 """enum EnumTest: byte
                 {
@@ -148,6 +148,20 @@ type EnumTests () =
                     | Min = 0uy
                     | Max = 255uy"""
                            
+        csharp |> Converter.run 
+        |> (fun x -> printfn "%s" x; x)
+        |> should equal (formatFsharp fsharp)
+
+    [<Test>]
+    member this.``Enum with specified type of long (without numeric suffixes)`` () = 
+        let csharp = 
+                """enum Range : long { Max = 2147483648, Min = 255 };"""
+                
+        let fsharp = 
+                """type Range =
+                    | Max = 2147483648L
+                    | Min = 255L"""
+                               
         csharp |> Converter.run 
         |> (fun x -> printfn "%s" x; x)
         |> should equal (formatFsharp fsharp)
