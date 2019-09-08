@@ -395,6 +395,7 @@ type Class = {
 
 type Enum = {
     Name: string
+    Type: SynType option
     Members: EnumMemberValue list
     Attributes: Attribute list
 }

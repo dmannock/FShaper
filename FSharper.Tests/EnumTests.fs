@@ -133,3 +133,21 @@ type EnumTests () =
         csharp |> Converter.run 
         |> (fun x -> printfn "%s" x; x)
         |> should equal (formatFsharp fsharp)
+        
+    [<Test>]
+    member this.``Enum with specified type`` () = 
+        let csharp = 
+                """enum EnumTest: byte
+                {
+                    Min = 0,
+                    Max = 255
+                }"""
+            
+        let fsharp = 
+                """type EnumTest =
+                    | Min = 0uy
+                    | Max = 255uy"""
+                           
+        csharp |> Converter.run 
+        |> (fun x -> printfn "%s" x; x)
+        |> should equal (formatFsharp fsharp)

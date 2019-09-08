@@ -1192,6 +1192,16 @@ type FSharperTreeBuilder() =
                     }
             ))
             |> Seq.toList
+
+        let baseType = 
+            node.BaseList 
+            |> Option.ofObj 
+            |> Option.bind (fun x -> 
+                x.Types 
+                |> Seq.map (fun x -> ParserUtil.parseType x.Type)
+                |> Seq.toList
+                |> Seq.tryHead
+            )
         
         let enumMembers =
              node.Members
@@ -1199,6 +1209,7 @@ type FSharperTreeBuilder() =
              |> Seq.toList                            
         let e = {
             Enum.Name = node.Identifier.ValueText
+            Type = baseType
             Members = enumMembers
             Attributes = attrs
         } 

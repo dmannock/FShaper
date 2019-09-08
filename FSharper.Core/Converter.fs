@@ -533,12 +533,34 @@ module FormatOuput =
                 range0
         )
 
+        let intToConstType x =
+            //assuming byte as default non-int type for now
+            x |> byte |> SynConst.Byte
+
+        let getConstValue =
+            function
+            | SynConst.Int32(x) -> Some x
+            | _ -> None
+
+        let convertToBaseType (t: SynType option) (x: SynConst) =
+            match t with
+            | Some(synType) when SynType.getName synType = "byte" -> 
+                x 
+                |> getConstValue
+                |> Option.map intToConstType
+            | Some _ -> Some x
+            | None -> Some x
+
         let enumCases = 
             enum.Members
             |> List.choose (fun (name, expr) -> 
                 match toSynExpr expr with
-                | SynExpr.Const(synConst, _) -> createEnumCase name synConst |> Some
-                | _ -> None )
+                | SynExpr.Const(synConst, _) -> 
+                    synConst
+                    |> (convertToBaseType enum.Type)
+                    |> Option.map (createEnumCase name)
+                | _ -> None
+            )
 
         let theEnum: SynTypeDefnSimpleRepr = 
             SynTypeDefnSimpleRepr.Enum(
